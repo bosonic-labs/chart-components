@@ -1,0 +1,16 @@
+b-line-chart .axis path,
+b-line-chart .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+b-line-chart .x.axis path {
+  display: none;
+}
+
+b-line-chart .line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}

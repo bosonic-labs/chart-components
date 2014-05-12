@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo</title>
+    <meta charset="utf-8">
+    <script src="js/bosonic-polyfills.js"></script>
+    <script src="js/b-line-chart.js"></script>
+    <link href="css/b-line-chart.css" rel="stylesheet">
+</head>
+<body>
+    <b-line-chart></b-line-chart>
+    <script type="text/javascript">
+        window.addEventListener('WebComponentsReady', function() {
+            var chart = document.querySelector('b-line-chart');
+            d3.tsv("data.tsv", function(error, data) {
+                chart.data = data;
+            });
+        });
+    </script>
+</body>
