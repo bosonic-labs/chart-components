@@ -1,20 +1,32 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Demo</title>
     <meta charset="utf-8">
     <script src="js/bosonic-polyfills.js"></script>
-    <script src="js/b-line-chart.js"></script>
-    <link href="css/b-line-chart.css" rel="stylesheet">
+    <script src="js/b-chart-components.js"></script>
+    <link href="css/b-chart-components.css" rel="stylesheet">
 </head>
+
 <body>
-    <b-line-chart></b-line-chart>
+    <b-pie-chart></b-pie-chart>
+    <br>
+    <b-pie-chart radius="50"></b-pie-chart>
+
     <script type="text/javascript">
-        window.addEventListener('WebComponentsReady', function() {
-            var chart = document.querySelector('b-line-chart');
-            d3.tsv("data.tsv", function(error, data) {
-                chart.data = data;
-            });
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function data() {
+        var charts = document.querySelectorAll('b-pie-chart');
+        [].forEach.call(charts, function(chart) {
+            chart.data = [[getRandomInt(1000,5000), getRandomInt(1000,5000), getRandomInt(1000,5000), getRandomInt(1000,5000)]];
         });
+    }
+
+    window.addEventListener('WebComponentsReady', data);
     </script>
 </body>
