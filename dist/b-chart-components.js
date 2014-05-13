@@ -18582,11 +18582,32 @@
   }
 }();
 (function () {
-    var color = d3.scale.category20c();
+    var color = d3.scale.ordinal().domain([
+            'Lorem ipsum',
+            'dolor sit',
+            'amet',
+            'consectetur',
+            'adipisicing',
+            'elit',
+            'sed',
+            'do',
+            'eiusmod',
+            'tempor',
+            'incididunt'
+        ]).range([
+            '#98abc5',
+            '#8a89a6',
+            '#7b6888',
+            '#6b486b',
+            '#a05d56',
+            '#d0743c',
+            '#ff8c00'
+        ]);
     var BPieChartPrototype = Object.create(HTMLElement.prototype, {
             data: {
                 enumerable: true,
                 set: function (data) {
+                    console.log(data);
                     this._data = data;
                     this._render();
                 }
@@ -18600,15 +18621,32 @@
             createdCallback: {
                 enumerable: true,
                 value: function () {
+                    this.svg = d3.select(this).append('svg').attr('width', this.radius * 2).attr('height', this.radius * 2).append('g');
+                    this.svg.append('g').attr('class', 'slices');
+                    this.pie = d3.layout.pie().sort(null).value(function (d) {
+                        return d.value;
+                    });
+                    this.arc = d3.svg.arc().outerRadius(this.radius * 0.8);
+                    this.svg.attr('transform', 'translate(' + this.radius + ',' + this.radius + ')');
                 }
             },
             _render: {
                 enumerable: true,
                 value: function () {
-                    var pie = d3.select(this).selectAll('svg').data(this._data).enter().append('svg:svg').attr('width', this.radius * 2).attr('height', this.radius * 2).append('svg:g').attr('transform', 'translate(' + this.radius + ',' + this.radius + ')');
-                    pie.selectAll('path').data(d3.layout.pie()).enter().append('svg:path').attr('d', d3.svg.arc().outerRadius(this.radius)).style('fill', function (d, i) {
-                        return color(i);
+                    var thiselement = this;
+                    var slice = this.svg.select('.slices').selectAll('path.slice').data(this.pie(this._data));
+                    slice.enter().insert('path').style('fill', function (d) {
+                        return color(d.data.label);
+                    }).attr('class', 'slice');
+                    slice.transition().duration(1000).attrTween('d', function (d) {
+                        this._current = this._current || d;
+                        var interpolate = d3.interpolate(this._current, d);
+                        this._current = interpolate(0);
+                        return function (t) {
+                            return thiselement.arc(interpolate(t));
+                        };
                     });
+                    slice.exit().remove();
                 }
             }
         });
