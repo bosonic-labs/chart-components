@@ -10,7 +10,10 @@
 </head>
 
 <body>
-    <b-pie-chart></b-pie-chart>
+    <h3>Pie chart: dynamic, resizable</h3>
+    <b-pie-chart id="reload"></b-pie-chart>
+    <b-pie-chart dynamic></b-pie-chart>
+    <b-pie-chart radius="20"></b-pie-chart>
     <br>
     <a href="#" id="data">load new data</a>
 
@@ -19,18 +22,13 @@
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    var color = d3.scale.ordinal()
-        .domain(["Lorem ipsum", "dolor sit", "amet", "consectetur", "adipisicing", "elit", "sed", "do", "eiusmod", "tempor", "incididunt"])
-        .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
-
     function randomData() {
-        var labels = color.domain();
-        return labels.map(function(label) {
-            return {
-                label: label,
-                value: Math.random()
-            }
-        });
+        var nb = getRandomInt(5,10);
+        var data = [];
+        for(var i = 0 ; i < nb ; i++) {
+            data.push(getRandomInt(1,300));
+        }
+        return data;
     }
 
     function data() {

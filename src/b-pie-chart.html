@@ -15,66 +15,80 @@
     </style>
     <script src="../node_modules/d3/d3.js"></script>
     <script>
-    // var color = d3.scale.category20c();
 
-    var color = d3.scale.ordinal()
-    .domain(["Lorem ipsum", "dolor sit", "amet", "consectetur", "adipisicing", "elit", "sed", "do", "eiusmod", "tempor", "incididunt"])
-    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+    var color = d3.scale.category20c();
 
     ({
         set data(data) {
-            console.log(data);
             this._data = data;
             this._render();
         },
 
+        get isDynamic() {
+            return this.hasAttribute('dynamic');
+        },
+
         get radius() {
-            return~~ this.getAttribute('radius') || 100;
+            return ~~this.getAttribute('radius') || 100;
         },
 
         createdCallback: function() {
+            // The svg>g root element
             this.svg = d3.select(this)
                 .append("svg")
-                .attr("width", (this.radius) * 2)
-                .attr("height", (this.radius) * 2)
-                .append("g");
+                .attr("width", (this.radius) * 2).attr("height", (this.radius) * 2)
+                .append("g")
+                .attr("transform", "translate(" + this.radius + "," + this.radius + ")");
 
+            // The group of slices
             this.svg.append("g")
                 .attr("class", "slices");
 
+            // The pie layout using to calculate angles from 0 to 2pi https://github.com/mbostock/d3/wiki/Pie-Layout#pie
             this.pie = d3.layout.pie()
                 .sort(null)
                 .value(function(d) {
-                    return d.value;
+                    return d;
                 });
 
+            // The arc generator https://github.com/mbostock/d3/wiki/SVG-Shapes#arc
             this.arc = d3.svg.arc()
-                .outerRadius(this.radius * 0.8);
+                .innerRadius(0)
+                .outerRadius(this.radius);
 
-            this.svg.attr("transform", "translate(" + this.radius + "," + this.radius + ")");
+            var _currentDatum;
+            this.tween = function(d) {
+                var interpolate = d3.interpolate(_currentDatum || d, d);
+                _currentDatum = interpolate(0);
+                return function(t) {
+                    return this.arc(interpolate(t));
+                }.bind(this);
+            }.bind(this);
         },
 
         _render: function() {
-            var thiselement = this;
+
             var slice = this.svg.select(".slices").selectAll("path.slice").data(this.pie(this._data));
 
+            // Create new slice as needed
             slice.enter()
                 .insert("path")
-                .style("fill", function(d) {
-                    return color(d.data.label);
+                .style("fill", function(d, i) {
+                    return color(i);
                 })
                 .attr("class", "slice");
 
-            slice
-                .transition().duration(1000)
-                .attrTween("d", function(d) {
-                    this._current = this._current || d;
-                    var interpolate = d3.interpolate(this._current, d);
-                    this._current = interpolate(0);
-                    return function(t) {
-                        return thiselement.arc(interpolate(t));
-                    };
-                });
+            // Insert data with transition
+            if (this.isDynamic) {
+                slice
+                    .transition().duration(1000)
+                    .attrTween("d", this.tween);
+            }
+            else {
+                slice.attr("d", function(d) {
+                    return this.arc(d);
+                }.bind(this));
+            }
 
             slice.exit()
                 .remove();
