@@ -8,11 +8,23 @@
     <link href="css/b-line-chart.css" rel="stylesheet">
 </head>
 <body>
-    <b-line-chart></b-line-chart>
+    <b-line-chart>
+        <b-chart-axis axis="x" type="datetime" orientation="bottom" property="date"></b-chart-axis>
+        <b-chart-axis axis="y" type="linear" orientation="left" label="Price ($)"></b-chart-axis>
+
+        <b-line-series property="close" form="curve" label="Price"></b-line-series>
+    </b-line-chart>
     <script type="text/javascript">
         window.addEventListener('WebComponentsReady', function() {
-            var chart = document.querySelector('b-line-chart');
+            var chart = document.querySelector('b-line-chart'),
+                parseDate = d3.time.format("%d-%b-%y").parse;
+
             d3.tsv("data.tsv", function(error, data) {
+                data.forEach(function(d) {
+                    d.date = parseDate(d.date);
+                    d.close = +d.close;
+                });
+
                 chart.data = data;
             });
         });

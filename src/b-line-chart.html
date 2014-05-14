@@ -19,73 +19,103 @@
     </style>
     <script src="../node_modules/d3/d3.js"></script>
     <script>
-        var margin = {top: 20, right: 20, bottom: 30, left: 50},
-                    width = 960 - margin.left - margin.right,
-                    height = 500 - margin.top - margin.bottom;
-
-        var parseDate = d3.time.format("%d-%b-%y").parse;
-
-        var x = d3.time.scale()
-            .range([0, width]);
-
-        var y = d3.scale.linear()
-            .range([height, 0]);
-
-        var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient("bottom");
-
-        var yAxis = d3.svg.axis()
-            .scale(y)
-            .orient("left");
-
-        var line = d3.svg.line()
-            .x(function(d) { return x(d.date); })
-            .y(function(d) { return y(d.close); });
+        var DEFAULTS = {
+            WIDTH: 960,
+            HEIGHT: 500,
+            MARGIN: {
+                top: 20,
+                right: 20,
+                bottom: 30,
+                left: 50
+            }
+        };
 
         ({
             get width() {
-                return this.hasAttribute('width') ? parseInt(this.getAttribute('width'))
-                                                  : this.getBoundingClientRect().width;
+                return this.hasAttribute('width') ? parseInt(this.getAttribute('width')) : DEFAULTS.WIDTH;
+            },
+
+            get height() {
+                return this.hasAttribute('height') ? parseInt(this.getAttribute('height')) : DEFAULTS.HEIGHT;
+            },
+
+            get margin() {
+                return DEFAULTS.MARGIN;
+            },
+
+            get chartWidth() {
+                return this.width - this.margin.left - this.margin.right;
+            },
+
+            get chartHeight() {
+                return this.height - this.margin.top - this.margin.bottom;
+            },
+
+            get chartElement() {
+                return this.querySelector('svg > g');
             },
 
             set data(data) {
-                data.forEach(function(d) {
-                    d.date = parseDate(d.date);
-                    d.close = +d.close;
-                });
-
-                x.domain(d3.extent(data, function(d) { return d.date; }));
-                y.domain(d3.extent(data, function(d) { return d.close; }));
-
-                this.svg.append("g")
-                  .attr("class", "x axis")
-                  .attr("transform", "translate(0," + height + ")")
-                  .call(xAxis);
-
-                this.svg.append("g")
-                  .attr("class", "y axis")
-                  .call(yAxis)
-                .append("text")
-                  .attr("transform", "rotate(-90)")
-                  .attr("y", 6)
-                  .attr("dy", ".71em")
-                  .style("text-anchor", "end")
-                  .text("Price ($)");
-
-                this.svg.append("path")
-                  .datum(data)
-                  .attr("class", "line")
-                  .attr("d", line);
+                this.renderChart(data);
             },
 
             createdCallback: function() {
+                var margin = this.margin;
 
-                this.svg = d3.select(this).append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
+                d3.select(this).append("svg")
+                    .attr("width", this.width + margin.left + margin.right)
+                    .attr("height", this.height + margin.top + margin.bottom)
                   .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            },
+
+            renderChart: function(data) {
+                var x = this.getScale('x'),
+                    y = this.getScale('y');
+
+                x.domain(d3.extent(data, function(d) { return d.date; })); // TODO: prop en dur
+                y.domain(d3.extent(data, function(d) { return d.close; }));
+
+                this.renderAxes(x, y);
+
+                this.renderSeries(data, x, y);
+            },
+
+            renderAxes: function(x, y) {
+                var xAxis = this.querySelector('b-chart-axis[axis="x"]'),
+                    yAxis = this.querySelector('b-chart-axis[axis="y"]');
+
+                if (xAxis) xAxis.render(x);
+                if (yAxis) yAxis.render(y);
+            },
+
+            renderSeries: function(data, x, y) {
+                var current, all = this.querySelectorAll('b-line-series');
+                for (var i = 0; i < all.length; i++) {
+                    current = all[i];
+
+                    var line = d3.svg.line()
+                        .x(function(d) { return x(d.date); }) // TODO: prop en dur
+                        .y(function(d) { return y(d[current.property]); });
+
+                    d3.select(this.chartElement).append("path")
+                      .datum(data)
+                      .attr("class", "line")
+                      .attr("d", line);
+                }
+            },
+
+            getScale: function(axis) {
+                var axisElt = this.querySelector('b-chart-axis[axis="'+axis+'"]'),
+                    axisType = axisElt ? axisElt.type : 'linear',
+                    axisRange = axis === 'x' ? [0, this.chartWidth] : [this.chartHeight, 0]
+
+                switch (axisType) {
+                    case 'datetime':
+                        return d3.time.scale().range(axisRange);
+                    default:
+                        return d3.scale.linear().range(axisRange);
+                }
             }
         });
     </script>

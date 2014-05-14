@@ -1,0 +1,63 @@
+<element name="b-chart-axis">
+    <style>
+        
+    </style>
+    <script src="../node_modules/d3/d3.js"></script>
+    <script>
+        ({
+            get axis() {
+                return this.getAttribute('axis') === 'y' ? 'y' : 'x';
+            },
+
+            get horizontal() {
+                return this.axis === 'x';
+            },
+
+            get vertical() {
+                return this.axis === 'y';
+            },
+
+            get type() {
+                return this.hasAttribute('type') ? this.getAttribute('type') : 'linear';
+            },
+
+            get label() {
+                return this.getAttribute('label');
+            },
+
+            get orientation() {
+                return this.hasAttribute('orientation') 
+                    ? this.getAttribute('orientation') 
+                    : (this.horizontal ? 'left' : 'bottom');
+            },
+            
+            render: function(scale) {
+                var chartAxis,
+                    svg = d3.select(this.parentNode.chartElement),
+                    axis = d3.svg.axis().scale(scale).orient(this.orientation);
+
+                if (this.horizontal) {
+                    chartAxis = svg.append("g")
+                      .attr("class", "x axis")
+                      .attr("transform", "translate(0," + this.parentNode.chartHeight + ")")
+                      .call(axis);
+                } else {
+                    chartAxis = svg.append("g")
+                      .attr("class", "y axis")
+                      .call(axis)
+                }
+
+                if (this.label) {
+                    if (this.vertical) {
+                        chartAxis.append("text")
+                          .attr("transform", "rotate(-90)")
+                          .attr("y", 6)
+                          .attr("dy", ".71em")
+                          .style("text-anchor", "end")
+                          .text(this.label);
+                    }
+                }
+            }
+        });
+    </script>
+</element>
