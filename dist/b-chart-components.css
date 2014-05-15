@@ -15,3 +15,8 @@ b-line-chart .line {
   stroke: steelblue;
   stroke-width: 1.5px;
 }
+
+b-pie-chart {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  display: inline-block;
+}

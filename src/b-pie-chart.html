@@ -1,0 +1,108 @@
+<element name="b-pie-chart">
+    <style>
+    :host {
+        font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+        display: inline-block;
+    }
+    </style>
+    <script src="../node_modules/d3/d3.js"></script>
+    <script>
+    ({
+        set data(data) {
+            this._data = data;
+            this._render();
+        },
+
+        get radius() {
+            return~~ this.getAttribute('radius') || 100;
+        },
+
+        get dynamic() {
+            return this.hasAttribute('dynamic');
+        },
+
+        get doughnut() {
+            return this.hasAttribute('doughnut') || this.hasAttribute('donut');
+        },
+
+        get color() {
+            return this.getAttribute('colors');
+        },
+
+        colorization: function(thema) {
+            this.svg.select(".slices").selectAll("path.slice").style("fill", function(d, i) {
+                return thema[i % thema.length];
+            });
+        },
+
+        createdCallback: function() {
+            this.svg = d3.select(this)
+                .append("svg")
+                .attr("width", (this.radius) * 2).attr("height", (this.radius) * 2)
+                .append("g")
+                .attr("transform", "translate(" + (this.radius) + "," + (this.radius) + ")");
+
+            this.svg.append("g")
+                .attr("class", "slices");
+
+            this.pie = d3.layout.pie()
+                .sort(null)
+                .value(function(d) {
+                    return d;
+                });
+
+            this.arc = d3.svg.arc()
+                .innerRadius(this.doughnut ? this.radius * 0.5 : 0)
+                .outerRadius(this.radius);
+
+            var _currentDatum;
+            this.tween = function(d) {
+                var interpolate = d3.interpolate(_currentDatum || d, d);
+                _currentDatum = interpolate(0);
+                return function(t) {
+                    return this.arc(interpolate(t));
+                }.bind(this);
+            }.bind(this);
+
+            this.notween = function(d) {
+                return this.arc(d);
+            }.bind(this);
+
+            this.text = function(d) {
+                return d.value;
+            }
+
+            this._colorization = this.color ? d3.scale.ordinal().range(this.color.split(" ")) : d3.scale.category10();
+        },
+
+        _render: function() {
+            var slice = this.svg.select(".slices").selectAll("path.slice").data(this.pie(this._data));
+
+            // Create new slice as needed
+            slice.enter()
+                .insert("path")
+                .style("fill", function(d, i) {
+                    return this._colorization(i);
+                }.bind(this))
+                .attr("class", "slice");
+
+            slice
+                .append("title")
+                .text(this.text); // legend on mouseover
+
+            // Insert data with transition
+            if (this.dynamic) {
+                slice
+                    .transition().duration(1000)
+                    .attrTween("d", this.tween);
+            } else {
+                slice
+                    .attr("d", this.notween);
+            }
+
+            slice.exit()
+                .remove();
+        }
+    });
+    </script>
+</element>

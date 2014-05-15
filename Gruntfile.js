@@ -11,8 +11,8 @@ module.exports = function(grunt) {
     bosonic: {
       components: {
         src: ['src/*.html'],
-        css: 'dist/b-line-chart.css',
-        js:  'dist/b-line-chart.js'
+        css: 'dist/b-chart-components.css',
+        js:  'dist/b-chart-components.js'
       }
     },
 
