@@ -10,12 +10,19 @@
 </head>
 
 <body>
-    <h3>Pie chart: dynamic, resizable</h3>
-    <b-pie-chart id="reload"></b-pie-chart>
+    <h3>Pie chart: dynamic, resizable, doughnutable, colorizable</h3>
+    <b-pie-chart></b-pie-chart>
     <b-pie-chart dynamic></b-pie-chart>
     <b-pie-chart radius="20"></b-pie-chart>
+    <b-pie-chart doughnut></b-pie-chart>
+
+    <b-pie-chart colors="#ff0 #0f0 #f00"></b-pie-chart>
+    <b-pie-chart colors="#eee #ccc #aaa #888 #666 #444 #222 #000"></b-pie-chart>
+
+
     <br>
     <a href="#" id="data">load new data</a>
+    <a href="#" id="color">change colors</a>
 
     <script type="text/javascript">
     function getRandomInt(min, max) {
@@ -43,6 +50,13 @@
     document.querySelector('#data').addEventListener('click', function(e) {
         e.preventDefault();
         data();
+    });
+    document.querySelector('#color').addEventListener('click', function(e) {
+        e.preventDefault();
+        var charts = document.querySelectorAll('b-pie-chart');
+        [].forEach.call(charts, function(chart) {
+            chart.colorization(['#ff0','#0f0','#f00']);
+        });
     });
     </script>
 </body>

@@ -2,58 +2,57 @@
     <style>
     :host {
         font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
-    }
-    path.slice {
-        stroke-width:2px;
-    }
-    polyline {
-        opacity: .3;
-        stroke: black;
-        stroke-width: 2px;
-        fill: none;
+        display: inline-block;
     }
     </style>
     <script src="../node_modules/d3/d3.js"></script>
     <script>
-
-    var color = d3.scale.category20c();
-
     ({
         set data(data) {
             this._data = data;
             this._render();
         },
 
-        get isDynamic() {
+        get radius() {
+            return~~ this.getAttribute('radius') || 100;
+        },
+
+        get dynamic() {
             return this.hasAttribute('dynamic');
         },
 
-        get radius() {
-            return ~~this.getAttribute('radius') || 100;
+        get doughnut() {
+            return this.hasAttribute('doughnut') || this.hasAttribute('donut');
+        },
+
+        get color() {
+            return this.getAttribute('colors');
+        },
+
+        colorization: function(thema) {
+            this.svg.select(".slices").selectAll("path.slice").style("fill", function(d, i) {
+                return thema[i % thema.length];
+            });
         },
 
         createdCallback: function() {
-            // The svg>g root element
             this.svg = d3.select(this)
                 .append("svg")
                 .attr("width", (this.radius) * 2).attr("height", (this.radius) * 2)
                 .append("g")
-                .attr("transform", "translate(" + this.radius + "," + this.radius + ")");
+                .attr("transform", "translate(" + (this.radius) + "," + (this.radius) + ")");
 
-            // The group of slices
             this.svg.append("g")
                 .attr("class", "slices");
 
-            // The pie layout using to calculate angles from 0 to 2pi https://github.com/mbostock/d3/wiki/Pie-Layout#pie
             this.pie = d3.layout.pie()
                 .sort(null)
                 .value(function(d) {
                     return d;
                 });
 
-            // The arc generator https://github.com/mbostock/d3/wiki/SVG-Shapes#arc
             this.arc = d3.svg.arc()
-                .innerRadius(0)
+                .innerRadius(this.doughnut ? this.radius * 0.5 : 0)
                 .outerRadius(this.radius);
 
             var _currentDatum;
@@ -64,30 +63,41 @@
                     return this.arc(interpolate(t));
                 }.bind(this);
             }.bind(this);
+
+            this.notween = function(d) {
+                return this.arc(d);
+            }.bind(this);
+
+            this.text = function(d) {
+                return d.value;
+            }
+
+            this._colorization = this.color ? d3.scale.ordinal().range(this.color.split(" ")) : d3.scale.category10();
         },
 
         _render: function() {
-
             var slice = this.svg.select(".slices").selectAll("path.slice").data(this.pie(this._data));
 
             // Create new slice as needed
             slice.enter()
                 .insert("path")
                 .style("fill", function(d, i) {
-                    return color(i);
-                })
+                    return this._colorization(i);
+                }.bind(this))
                 .attr("class", "slice");
 
+            slice
+                .append("title")
+                .text(this.text); // legend on mouseover
+
             // Insert data with transition
-            if (this.isDynamic) {
+            if (this.dynamic) {
                 slice
                     .transition().duration(1000)
                     .attrTween("d", this.tween);
-            }
-            else {
-                slice.attr("d", function(d) {
-                    return this.arc(d);
-                }.bind(this));
+            } else {
+                slice
+                    .attr("d", this.notween);
             }
 
             slice.exit()

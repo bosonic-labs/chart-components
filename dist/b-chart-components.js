@@ -18582,7 +18582,6 @@
   }
 }();
 (function () {
-    var color = d3.scale.category20c();
     var BPieChartPrototype = Object.create(HTMLElement.prototype, {
             data: {
                 enumerable: true,
@@ -18591,16 +18590,36 @@
                     this._render();
                 }
             },
-            isDynamic: {
+            radius: {
+                enumerable: true,
+                get: function () {
+                    return ~~this.getAttribute('radius') || 100;
+                }
+            },
+            dynamic: {
                 enumerable: true,
                 get: function () {
                     return this.hasAttribute('dynamic');
                 }
             },
-            radius: {
+            doughnut: {
                 enumerable: true,
                 get: function () {
-                    return ~~this.getAttribute('radius') || 100;
+                    return this.hasAttribute('doughnut') || this.hasAttribute('donut');
+                }
+            },
+            color: {
+                enumerable: true,
+                get: function () {
+                    return this.getAttribute('colors');
+                }
+            },
+            colorization: {
+                enumerable: true,
+                value: function (thema) {
+                    this.svg.select('.slices').selectAll('path.slice').style('fill', function (d, i) {
+                        return thema[i % thema.length];
+                    });
                 }
             },
             createdCallback: {
@@ -18611,7 +18630,7 @@
                     this.pie = d3.layout.pie().sort(null).value(function (d) {
                         return d;
                     });
-                    this.arc = d3.svg.arc().innerRadius(0).outerRadius(this.radius);
+                    this.arc = d3.svg.arc().innerRadius(this.doughnut ? this.radius * 0.5 : 0).outerRadius(this.radius);
                     var _currentDatum;
                     this.tween = function (d) {
                         var interpolate = d3.interpolate(_currentDatum || d, d);
@@ -18620,6 +18639,13 @@
                             return this.arc(interpolate(t));
                         }.bind(this);
                     }.bind(this);
+                    this.notween = function (d) {
+                        return this.arc(d);
+                    }.bind(this);
+                    this.text = function (d) {
+                        return d.value;
+                    };
+                    this._colorization = this.color ? d3.scale.ordinal().range(this.color.split(' ')) : d3.scale.category10();
                 }
             },
             _render: {
@@ -18627,14 +18653,13 @@
                 value: function () {
                     var slice = this.svg.select('.slices').selectAll('path.slice').data(this.pie(this._data));
                     slice.enter().insert('path').style('fill', function (d, i) {
-                        return color(i);
-                    }).attr('class', 'slice');
-                    if (this.isDynamic) {
+                        return this._colorization(i);
+                    }.bind(this)).attr('class', 'slice');
+                    slice.append('title').text(this.text);
+                    if (this.dynamic) {
                         slice.transition().duration(1000).attrTween('d', this.tween);
                     } else {
-                        slice.attr('d', function (d) {
-                            return this.arc(d);
-                        }.bind(this));
+                        slice.attr('d', this.notween);
                     }
                     slice.exit().remove();
                 }
