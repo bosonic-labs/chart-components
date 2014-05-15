@@ -14,7 +14,7 @@
         },
 
         get radius() {
-            return~~ this.getAttribute('radius') || 100;
+            return ~~this.getAttribute('radius') || 100;
         },
 
         get dynamic() {
@@ -78,7 +78,6 @@
         _render: function() {
             var slice = this.svg.select(".slices").selectAll("path.slice").data(this.pie(this._data));
 
-            // Create new slice as needed
             slice.enter()
                 .insert("path")
                 .style("fill", function(d, i) {
@@ -88,9 +87,8 @@
 
             slice
                 .append("title")
-                .text(this.text); // legend on mouseover
+                .text(this.text);
 
-            // Insert data with transition
             if (this.dynamic) {
                 slice
                     .transition().duration(1000)
