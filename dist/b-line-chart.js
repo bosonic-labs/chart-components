@@ -18645,12 +18645,12 @@
             renderChart: {
                 enumerable: true,
                 value: function (data) {
-                    var x = this.getScale('x'), y = this.getScale('y');
+                    var x = this.getScale('x'), y = this.getScale('y'), s = this.getSeries();
                     x.domain(d3.extent(data, function (d) {
                         return d.date;
                     }));
                     y.domain(d3.extent(data, function (d) {
-                        return d.close;
+                        return d['New York'];
                     }));
                     this.renderAxes(x, y);
                     this.renderSeries(data, x, y);
@@ -18672,11 +18672,15 @@
                     var current, all = this.querySelectorAll('b-line-series');
                     for (var i = 0; i < all.length; i++) {
                         current = all[i];
-                        var line = d3.svg.line().x(function (d) {
-                                return x(d.date);
-                            }).y(function (d) {
-                                return y(d[current.property]);
-                            });
+                        var line = d3.svg.line();
+                        if (current.interpolation) {
+                            line.interpolate(current.interpolation);
+                        }
+                        line.x(function (d) {
+                            return x(d.date);
+                        }).y(function (d) {
+                            return y(d[current.property]);
+                        });
                         d3.select(this.chartElement).append('path').datum(data).attr('class', 'line').attr('d', line);
                     }
                 }
@@ -18697,6 +18701,17 @@
                     default:
                         return d3.scale.linear().range(axisRange);
                     }
+                }
+            },
+            getSeries: {
+                enumerable: true,
+                value: function () {
+                    var series = [], elts = this.querySelectorAll('b-line-series');
+                    for (var i = 0; i < elts.length; i++) {
+                        if (elts[i].property)
+                            series.push(elts[i].property);
+                    }
+                    return series;
                 }
             }
         });
@@ -27971,6 +27986,12 @@
                 enumerable: true,
                 get: function () {
                     return this.getAttribute('property');
+                }
+            },
+            interpolation: {
+                enumerable: true,
+                get: function () {
+                    return this.getAttribute('interpolation');
                 }
             }
         });

@@ -71,10 +71,11 @@
 
             renderChart: function(data) {
                 var x = this.getScale('x'),
-                    y = this.getScale('y');
+                    y = this.getScale('y'),
+                    s = this.getSeries();
 
                 x.domain(d3.extent(data, function(d) { return d.date; })); // TODO: prop en dur
-                y.domain(d3.extent(data, function(d) { return d.close; }));
+                y.domain(d3.extent(data, function(d) { return d['New York']; }));
 
                 this.renderAxes(x, y);
 
@@ -94,8 +95,13 @@
                 for (var i = 0; i < all.length; i++) {
                     current = all[i];
 
-                    var line = d3.svg.line()
-                        .x(function(d) { return x(d.date); }) // TODO: prop en dur
+                    var line = d3.svg.line();
+
+                    if (current.interpolation) {
+                        line.interpolate(current.interpolation);
+                    }
+                    
+                    line.x(function(d) { return x(d.date); }) // TODO: prop en dur
                         .y(function(d) { return y(d[current.property]); });
 
                     d3.select(this.chartElement).append("path")
@@ -116,6 +122,16 @@
                     default:
                         return d3.scale.linear().range(axisRange);
                 }
+            },
+
+            getSeries: function() {
+                var series = [],
+                    elts = this.querySelectorAll('b-line-series');
+
+                for (var i = 0; i < elts.length; i++) {
+                    if (elts[i].property) series.push(elts[i].property);
+                }
+                return series;
             }
         });
     </script>
