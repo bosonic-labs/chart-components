@@ -1,0 +1,117 @@
+<element name="b-bar-chart">
+    <style>
+    :host {
+        display: inline-block;
+    }
+    .bar {
+        fill: steelblue;
+    }
+    .axis path, .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+    </style>
+    <script src="../node_modules/d3/d3.js"></script>
+    <script>
+    var DEFAULTS = {
+        WIDTH: 960,
+        HEIGHT: 500,
+        MARGIN: {
+            top: 20,
+            right: 20,
+            bottom: 30,
+            left: 50
+        }
+    };
+
+    ({
+        get margin() {
+            return DEFAULTS.MARGIN;
+        },
+
+        get width() {
+            return this.hasAttribute('width') ? parseInt(this.getAttribute('width')) : DEFAULTS.WIDTH;
+        },
+
+        get height() {
+            return this.hasAttribute('height') ? parseInt(this.getAttribute('height')) : DEFAULTS.HEIGHT;
+        },
+
+        get chartHeight() {
+            return this.height - this.margin.top - this.margin.bottom;
+        },
+
+        get chartWidth() {
+            return this.width - this.margin.left - this.margin.right;
+        },
+
+        get barWidth() {
+            return 10;
+        },
+
+        set data(data) {
+            this._data = d3.nest()
+                .key(function(d) {
+                    return (this.key ? d[this.key] : d);
+                })
+                .entries(data);
+            this._render(this._data);
+        },
+
+        get chartElement() {
+            return this.querySelector('svg > g');
+        },
+
+        createdCallback: function() {
+            this.svg = d3.select(this)
+                .append("svg")
+                // .attr("width", this.width + this.margin.left + this.margin.right)
+                .attr("height", this.height + this.margin.top + this.margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+        },
+
+        renderAxes: function(x, y) {
+            var xAxis = this.querySelector('b-chart-axis[axis="x"]'),
+                yAxis = this.querySelector('b-chart-axis[axis="y"]');
+
+            if (xAxis && x) xAxis.render(x);
+            if (yAxis && y) yAxis.render(y);
+        },
+
+        _render: function(data) {
+            var scale = d3.scale.linear()
+                .domain([0, d3.max(data, function(d) {
+                    return d.values[0];
+                })])
+                .range([this.chartHeight, 0]);
+
+            var bar = this.svg
+                .append("g")
+                .attr("class", "bars")
+                .attr("transform", "translate(20,0)")
+                .selectAll("bar")
+                .data(data);
+
+            bar.enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d, i) {
+                    return 2 * i * this.barWidth;
+                }.bind(this))
+                .attr("width", this.barWidth)
+                .attr("y", function(d) {
+                    return scale(d.values);
+                })
+                .attr("height", function(d) {
+                    return this.chartHeight - scale(d.values);
+                }.bind(this))
+                .append("title")
+                .text(function(d) { return d.values[0]; });
+
+            this.renderAxes(null, scale);
+        },
+    })
+    </script>
+</element>

@@ -10,28 +10,29 @@
 </head>
 
 <body>
-    <b-line-chart id="sample1">
-        <b-chart-axis axis="x" type="datetime" orientation="bottom" property="date"></b-chart-axis>
-        <b-chart-axis axis="y" type="linear" orientation="left" label="Price ($)"></b-chart-axis>
+    <div class="b-line-chart">
+        <b-line-chart id="sample1">
+            <b-chart-axis axis="x" type="datetime" orientation="bottom" property="date"></b-chart-axis>
+            <b-chart-axis axis="y" type="linear" orientation="left" label="Price ($)"></b-chart-axis>
 
-        <b-line-series property="close" form="curve" label="Price"></b-line-series>
-    </b-line-chart>
+            <b-line-series property="close" form="curve" label="Price"></b-line-series>
+        </b-line-chart>
 
-    <b-line-chart id="sample2">
-        <b-chart-axis axis="x" type="datetime" orientation="bottom" property="date"></b-chart-axis>
-        <b-chart-axis axis="y" type="linear" orientation="left" label="Temperature (°F)"></b-chart-axis>
+        <b-line-chart id="sample2">
+            <b-chart-axis axis="x" type="datetime" orientation="bottom" property="date"></b-chart-axis>
+            <b-chart-axis axis="y" type="linear" orientation="left" label="Temperature (°F)"></b-chart-axis>
 
-        <b-line-series property="New York" form="curve" interpolation="basis" label="Price"></b-line-series>
-        <b-line-series property="Austin" form="curve" label="Price"></b-line-series>
-    </b-line-chart>
-    <script type="text/javascript">
+            <b-line-series property="New York" form="curve" interpolation="basis" label="Price"></b-line-series>
+            <b-line-series property="Austin" form="curve" label="Price"></b-line-series>
+        </b-line-chart>
+        <script type="text/javascript">
         window.addEventListener('WebComponentsReady', function() {
             var chart1 = document.querySelector('#sample1'),
                 chart2 = document.querySelector('#sample2');
 
             d3.tsv("data1.tsv", function(error, data) {
                 var parseDate = d3.time.format("%d-%b-%y").parse;
-                
+
                 data.forEach(function(d) {
                     d.date = parseDate(d.date);
                     d.close = +d.close;
@@ -42,7 +43,7 @@
 
             d3.tsv("data2.tsv", function(error, data) {
                 var parseDate = d3.time.format("%Y%m%d").parse;
-                
+
                 data.forEach(function(d) {
                     d.date = parseDate(d.date);
                     d['New York'] = +d['New York'];
@@ -53,55 +54,107 @@
                 chart2.data = data;
             });
         });
-    </script>
+        </script>
+    </div>
+    <div class="b-pie-chart">
+        <h3>Pie chart: dynamic, resizable, doughnutable, colorizable</h3>
+        <b-pie-chart></b-pie-chart>
+        <b-pie-chart dynamic></b-pie-chart>
+        <b-pie-chart radius="20"></b-pie-chart>
+        <b-pie-chart doughnut></b-pie-chart>
 
-    <h3>Pie chart: dynamic, resizable, doughnutable, colorizable</h3>
-    <b-pie-chart></b-pie-chart>
-    <b-pie-chart dynamic></b-pie-chart>
-    <b-pie-chart radius="20"></b-pie-chart>
-    <b-pie-chart doughnut></b-pie-chart>
-
-    <b-pie-chart colors="#ff0 #0f0 #f00"></b-pie-chart>
-    <b-pie-chart colors="#eee #ccc #aaa #888 #666 #444 #222 #000"></b-pie-chart>
+        <b-pie-chart colors="#ff0 #0f0 #f00"></b-pie-chart>
+        <b-pie-chart colors="#eee #ccc #aaa #888 #666 #444 #222 #000"></b-pie-chart>
 
 
-    <br>
-    <a href="#" id="data">load new data</a>
-    <a href="#" id="color">change colors</a>
+        <br>
+        <a href="#" id="data">load new data</a>
+        <a href="#" id="color">change colors</a>
 
-    <script type="text/javascript">
-    function getRandomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function randomData() {
-        var nb = getRandomInt(5,10);
-        var data = [];
-        for(var i = 0 ; i < nb ; i++) {
-            data.push(getRandomInt(1,300));
+        <script type="text/javascript">
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
-        return data;
-    }
 
-    function data() {
-        var charts = document.querySelectorAll('b-pie-chart');
-        [].forEach.call(charts, function(chart) {
-            chart.data = randomData();
+        function randomData() {
+            var nb = getRandomInt(5, 10);
+            var data = [];
+            for (var i = 0; i < nb; i++) {
+                data.push(getRandomInt(1, 300));
+            }
+            return data;
+        }
+
+        function data() {
+            var charts = document.querySelectorAll('b-pie-chart');
+            [].forEach.call(charts, function(chart) {
+                chart.data = randomData();
+            });
+        }
+
+        window.addEventListener('WebComponentsReady', data);
+
+        document.querySelector('#data').addEventListener('click', function(e) {
+            e.preventDefault();
+            data();
         });
-    }
-
-    window.addEventListener('WebComponentsReady', data);
-
-    document.querySelector('#data').addEventListener('click', function(e) {
-        e.preventDefault();
-        data();
-    });
-    document.querySelector('#color').addEventListener('click', function(e) {
-        e.preventDefault();
-        var charts = document.querySelectorAll('b-pie-chart');
-        [].forEach.call(charts, function(chart) {
-            chart.colorization(['#ff0','#0f0','#f00']);
+        document.querySelector('#color').addEventListener('click', function(e) {
+            e.preventDefault();
+            var charts = document.querySelectorAll('b-pie-chart');
+            [].forEach.call(charts, function(chart) {
+                chart.colorization(['#ff0', '#0f0', '#f00']);
+            });
         });
-    });
-    </script>
+        </script>
+    </div>
+    <div id="b-bar-chart">
+        <b-bar-chart>
+            <b-chart-axis axis="y" label="Random data" orientation="left"></b-chart-axis>
+        </b-bar-chart>
+
+        <script>
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function randomData() {
+            var nb = getRandomInt(5, 10);
+            var data = [];
+            for (var i = 0; i < nb; i++) {
+                data.push(getRandomInt(1, 300));
+            }
+            return data;
+        }
+
+        function createTable(data) {
+            var table = d3.select('.data').append('table');
+            var thead = table.append('thead');
+            var tbody = table.append('tbody');
+
+            thead.append('tr')
+                .append('th')
+                .html('data');
+
+            var rows = tbody.selectAll('tr')
+                .data(data)
+                .enter()
+                .append('tr')
+                .append('td')
+                .html(function(d) {
+                    return d;
+                });
+        }
+
+        function data() {
+            var charts = document.querySelectorAll('b-bar-chart');
+            [].forEach.call(charts, function(chart) {
+                var data = randomData();
+                chart.data = data;
+                // createTable(data);
+            });
+        }
+
+        window.addEventListener('WebComponentsReady', data);
+        </script>
+    </div>
 </body>
