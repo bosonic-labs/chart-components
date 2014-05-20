@@ -1,3 +1,17 @@
+b-bar-chart {
+  display: inline-block;
+}
+
+b-bar-chart .bar {
+  fill: steelblue;
+}
+
+b-bar-chart .axis path,
+b-bar-chart .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
 
 b-line-chart .axis path,
 b-line-chart .axis line {
@@ -17,6 +31,5 @@ b-line-chart .line {
 }
 
 b-pie-chart {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   display: inline-block;
 }
